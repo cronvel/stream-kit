@@ -1,6 +1,6 @@
 {
   "name": "stream-kit",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Stream utilities.",
   "main": "lib/stream-kit.js",
   "engines": {
@@ -27,11 +27,7 @@
     "url": "https://github.com/cronvel/stream-kit.git"
   },
   "keywords": [
-    "bin",
-    "binary",
-    "data",
-    "serializer",
-    "unserializer"
+    "stream"
   ],
   "author": "Cédric Ronvel",
   "license": "MIT",
