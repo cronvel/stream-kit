@@ -1,7 +1,7 @@
 /*
 	Stream Kit
 	
-	Copyright (c) 2016 Cédric Ronvel
+	Copyright (c) 2016 - 2018 Cédric Ronvel
 	
 	The MIT License (MIT)
 	
