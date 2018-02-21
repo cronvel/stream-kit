@@ -1,6 +1,6 @@
 {
   "name": "stream-kit",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Stream utilities.",
   "main": "lib/stream-kit.js",
   "engines": {
@@ -9,15 +9,11 @@
   "directories": {
     "test": "test"
   },
-  "dependencies": {},
+  "dependencies": {
+    "seventh": "^0.6.4"
+  },
   "devDependencies": {
-    "async-kit": "^2.2.3",
-    "doormen": "^0.6.7",
-    "nextgen-events": "^0.9.8",
-    "expect.js": "^0.3.1",
-    "jshint": "^2.9.4",
-    "mocha": "^3.2.0",
-    "string-kit": "^0.5.12"
+    "expect.js": "^0.3.1"
   },
   "scripts": {
     "test": "tea-time -R dot"
