@@ -24,29 +24,24 @@
 	SOFTWARE.
 */
 
-/* jshint unused:false */
 /* global describe, it, before, after */
 
 "use strict" ;
 
 
 
-//var fs = require( 'fs' ) ;
-//var expect = require( 'expect.js' ) ;
-//var doormen = require( 'doormen' ) ;
+const streamKit = require( '..' ) ;
+//const fs = require( 'fs' ) ;
 
 
 
-
-
-			/* Tests */
-
-
-
-describe( "..." , function() {
+describe( "FakeWritable" , () => {
 	
-	it( "..." ) ;
-	
+	it( "should bufferize any write" , () => {
+		var writable = new streamKit.FakeWritable() ;
+		writable.write( "bob" ) ;
+		expect( writable.get().toString() ).to.be( "bob" ) ;
+	} ) ;
 } ) ;
 
 
