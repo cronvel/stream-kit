@@ -1,6 +1,6 @@
 {
   "name": "stream-kit",
-  "version": "0.2.7",
+  "version": "0.3.0",
   "description": "Stream utilities.",
   "main": "lib/stream-kit.js",
   "engines": {
@@ -34,7 +34,7 @@
     "title": "Stream Kit",
     "years": [
       2016,
-      2018
+      2020
     ],
     "owner": "Cédric Ronvel"
   }
