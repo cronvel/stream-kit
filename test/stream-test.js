@@ -35,10 +35,10 @@ const streamKit = require( '..' ) ;
 
 
 
-describe( "FakeWritable" , () => {
+describe( "WritableToBuffer" , () => {
 	
 	it( "should bufferize any write" , () => {
-		var writable = new streamKit.FakeWritable() ;
+		var writable = new streamKit.WritableToBuffer() ;
 		
 		writable.write( "bob" ) ;
 		expect( writable.get().toString() ).to.be( "bob" ) ;
