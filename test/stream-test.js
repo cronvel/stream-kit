@@ -165,8 +165,61 @@ describe( "readBufferBits() / writeBufferBits()" , () => {
 		
 		// Write 1 bit
 		streamKit.writeBufferBits( buffer , 0 , 1 , 1 ) ;
-		expect( buffer[ 0 ] ).to.be( 1 ) ;
+		expect( buffer[ 0 ] ).to.be( 0b00000001 ) ;
+		streamKit.writeBufferBits( buffer , 7 , 1 , 1 ) ;
+		expect( buffer[ 0 ] ).to.be( 0b10000001 ) ;
+		streamKit.writeBufferBits( buffer , 4 , 1 , 1 ) ;
+		expect( buffer[ 0 ] ).to.be( 0b10010001 ) ;
+		streamKit.writeBufferBits( buffer , 4 , 1 , 0 ) ;
+		expect( buffer[ 0 ] ).to.be( 0b10000001 ) ;
+
+		// Write multiple bits
+		buffer[ 0 ] = 0 ;
+		streamKit.writeBufferBits( buffer , 2 , 4 , 0b1010 ) ;
+		expect( buffer[ 0 ] ).to.be( 0b00101000 ) ;
+		streamKit.writeBufferBits( buffer , 2 , 4 , 0b1111 ) ;
+		expect( buffer[ 0 ] ).to.be( 0b00111100 ) ;
+		streamKit.writeBufferBits( buffer , 2 , 4 , 0b0000 ) ;
+		expect( buffer[ 0 ] ).to.be( 0b00000000 ) ;
+		streamKit.writeBufferBits( buffer , 2 , 4 , 0b1111 ) ;
+		streamKit.writeBufferBits( buffer , 2 , 4 , 0b0101 ) ;
+		expect( buffer[ 0 ] ).to.be( 0b00010100 ) ;
+		streamKit.writeBufferBits( buffer , 0 , 4 , 0b1001 ) ;
+		expect( buffer[ 0 ] ).to.be( 0b00011001 ) ;
+		streamKit.writeBufferBits( buffer , 4 , 4 , 0b1101 ) ;
+		expect( buffer[ 0 ] ).to.be( 0b11011001 ) ;
+		streamKit.writeBufferBits( buffer , 0 , 8 , 0b01100110 ) ;
+		expect( buffer[ 0 ] ).to.be( 0b01100110 ) ;
 	} ) ;
 
+	it( "write bits across random bytes" , () => {
+		var buffer = Buffer.alloc( 16 ) ;
+		
+		// Across 2 bytes
+		streamKit.writeBufferBits( buffer , 4 , 8 , 0b10111111 ) ;
+		expect( buffer[ 0 ] ).to.be( 0b11110000 ) ;
+		expect( buffer[ 1 ] ).to.be( 0b00001011 ) ;
+		expect( buffer.readUInt32LE( 0 ) ).to.be( 0b0000101111110000 ) ;
+		streamKit.writeBufferBits( buffer , 4 , 8 , 0b00110111 ) ;
+		expect( buffer.readUInt32LE( 0 ) ).to.be( 0b0000001101110000 ) ;
+		streamKit.writeBufferBits( buffer , 0 , 10 , 0b1110001100 ) ;
+		expect( buffer.readUInt32LE( 0 ) ).to.be( 0b0000001110001100 ) ;
+		streamKit.writeBufferBits( buffer , 6 , 10 , 0b1010001001 ) ;
+		expect( buffer.readUInt32LE( 0 ) ).to.be( 0b1010001001001100 ) ;
+
+		// Across 3 bytes or more
+		streamKit.writeBufferBits( buffer , 4 , 16 , 0b1010001001111101 ) ;
+		expect( buffer.readUInt32LE( 0 ) ).to.be( 0b000010100010011111011100 ) ;
+		streamKit.writeBufferBits( buffer , 4 , 20 , 0b10001010001001111101 ) ;
+		expect( buffer.readUInt32LE( 0 ) ).to.be( 0b100010100010011111011100 ) ;
+		streamKit.writeBufferBits( buffer , 4 , 20 , 0b10001010001001000001 ) ;
+		expect( buffer.readUInt32LE( 0 ) ).to.be( 0b100010100010010000011100 ) ;
+		streamKit.writeBufferBits( buffer , 12 , 20 , 0b10001010001001000001 ) ;
+		expect( buffer.readUInt32LE( 0 ) ).to.be( 0b10001010001001000001010000011100 ) ;
+		streamKit.writeBufferBits( buffer , 12 , 16 , 0b1111111111111111 ) ;
+		expect( buffer.readUInt32LE( 0 ) ).to.be( 0b10001111111111111111010000011100 ) ;
+		streamKit.writeBufferBits( buffer , 0 , 16 , 0b1000000000000001 ) ;
+		expect( buffer.readUInt32LE( 0 ) ).to.be( 0b10001111111111111000000000000001 ) ;
+	} ) ;
 } ) ;
 
