@@ -58,3 +58,50 @@ describe( "WritableToBuffer" , () => {
 	} ) ;
 } ) ;
 
+
+
+describe( "readBufferBits() / writeBufferBits()" , () => {
+	
+	it( "read bits in the first byte" , () => {
+		var buffer = Buffer.alloc( 16 ) ;
+		buffer[ 0 ] = 0b00101101 ;
+		
+		// Read 1 bit
+		expect( streamKit.readBufferBits( buffer , 0 , 1 ) ).to.be( 1 ) ;
+		expect( streamKit.readBufferBits( buffer , 1 , 1 ) ).to.be( 0 ) ;
+		expect( streamKit.readBufferBits( buffer , 2 , 1 ) ).to.be( 1 ) ;
+		expect( streamKit.readBufferBits( buffer , 3 , 1 ) ).to.be( 1 ) ;
+		expect( streamKit.readBufferBits( buffer , 4 , 1 ) ).to.be( 0 ) ;
+		expect( streamKit.readBufferBits( buffer , 5 , 1 ) ).to.be( 1 ) ;
+		expect( streamKit.readBufferBits( buffer , 6 , 1 ) ).to.be( 0 ) ;
+		expect( streamKit.readBufferBits( buffer , 7 , 1 ) ).to.be( 0 ) ;
+
+		// Read 2 bits
+		expect( streamKit.readBufferBits( buffer , 0 , 2 ) ).to.be( 1 ) ;
+		expect( streamKit.readBufferBits( buffer , 1 , 2 ) ).to.be( 2 ) ;
+		expect( streamKit.readBufferBits( buffer , 2 , 2 ) ).to.be( 3 ) ;
+		expect( streamKit.readBufferBits( buffer , 3 , 2 ) ).to.be( 1 ) ;
+		expect( streamKit.readBufferBits( buffer , 4 , 2 ) ).to.be( 2 ) ;
+		expect( streamKit.readBufferBits( buffer , 5 , 2 ) ).to.be( 1 ) ;
+		expect( streamKit.readBufferBits( buffer , 6 , 2 ) ).to.be( 0 ) ;
+
+		// Read 3 bits
+		expect( streamKit.readBufferBits( buffer , 0 , 3 ) ).to.be( 5 ) ;
+		expect( streamKit.readBufferBits( buffer , 1 , 3 ) ).to.be( 6 ) ;
+		expect( streamKit.readBufferBits( buffer , 2 , 3 ) ).to.be( 3 ) ;
+		expect( streamKit.readBufferBits( buffer , 3 , 3 ) ).to.be( 5 ) ;
+		expect( streamKit.readBufferBits( buffer , 4 , 3 ) ).to.be( 2 ) ;
+		expect( streamKit.readBufferBits( buffer , 5 , 3 ) ).to.be( 1 ) ;
+
+		// Read 4 bits
+		expect( streamKit.readBufferBits( buffer , 0 , 4 ) ).to.be( 13 ) ;
+		expect( streamKit.readBufferBits( buffer , 1 , 4 ) ).to.be( 6 ) ;
+		expect( streamKit.readBufferBits( buffer , 2 , 4 ) ).to.be( 11 ) ;
+		expect( streamKit.readBufferBits( buffer , 3 , 4 ) ).to.be( 5 ) ;
+		expect( streamKit.readBufferBits( buffer , 4 , 4 ) ).to.be( 2 ) ;
+
+		// Read 8 bits
+		expect( streamKit.readBufferBits( buffer , 0 , 8 ) ).to.be( 45 ) ;
+	} ) ;
+} ) ;
+
