@@ -1,7 +1,7 @@
 /*
 	Stream Kit
 
-	Copyright (c) 2016 - 2020 Cédric Ronvel
+	Copyright (c) 2016 - 2021 Cédric Ronvel
 
 	The MIT License (MIT)
 
@@ -100,8 +100,73 @@ describe( "readBufferBits() / writeBufferBits()" , () => {
 		expect( streamKit.readBufferBits( buffer , 3 , 4 ) ).to.be( 5 ) ;
 		expect( streamKit.readBufferBits( buffer , 4 , 4 ) ).to.be( 2 ) ;
 
+		// Read 6 bits
+		expect( streamKit.readBufferBits( buffer , 0 , 6 ) ).to.be( 45 ) ;
+		expect( streamKit.readBufferBits( buffer , 1 , 6 ) ).to.be( 22 ) ;
+		expect( streamKit.readBufferBits( buffer , 2 , 6 ) ).to.be( 11 ) ;
+
 		// Read 8 bits
 		expect( streamKit.readBufferBits( buffer , 0 , 8 ) ).to.be( 45 ) ;
 	} ) ;
+
+	it( "read bits across random bytes" , () => {
+		var buffer = Buffer.alloc( 16 ) ;
+		buffer[ 0 ] = 0b00101101 ;
+		buffer[ 1 ] = 0b11100111 ;
+		buffer[ 2 ] = 0b01110110 ;
+		buffer[ 3 ] = 0b00010101 ;
+
+		// Read 1 bit
+		expect( streamKit.readBufferBits( buffer , 8 , 1 ) ).to.be( 1 ) ;
+		expect( streamKit.readBufferBits( buffer , 10 , 1 ) ).to.be( 1 ) ;
+		expect( streamKit.readBufferBits( buffer , 11 , 1 ) ).to.be( 0 ) ;
+		expect( streamKit.readBufferBits( buffer , 16 , 1 ) ).to.be( 0 ) ;
+		expect( streamKit.readBufferBits( buffer , 24 , 1 ) ).to.be( 1 ) ;
+		expect( streamKit.readBufferBits( buffer , 26 , 1 ) ).to.be( 1 ) ;
+
+		// Read 2 bits
+		expect( streamKit.readBufferBits( buffer , 7 , 2 ) ).to.be( 2 ) ;
+		expect( streamKit.readBufferBits( buffer , 15 , 2 ) ).to.be( 1 ) ;
+		expect( streamKit.readBufferBits( buffer , 16 , 2 ) ).to.be( 2 ) ;
+		expect( streamKit.readBufferBits( buffer , 17 , 2 ) ).to.be( 3 ) ;
+
+		// Read 3 bits
+		expect( streamKit.readBufferBits( buffer , 6 , 3 ) ).to.be( 4 ) ;
+		expect( streamKit.readBufferBits( buffer , 7 , 3 ) ).to.be( 6 ) ;
+		expect( streamKit.readBufferBits( buffer , 8 , 3 ) ).to.be( 7 ) ;
+
+		// Read 4 bits
+		expect( streamKit.readBufferBits( buffer , 13 , 4 ) ).to.be( 7 ) ;
+		expect( streamKit.readBufferBits( buffer , 14 , 4 ) ).to.be( 11 ) ;
+		expect( streamKit.readBufferBits( buffer , 15 , 4 ) ).to.be( 13 ) ;
+
+		// Read 8 bits
+		expect( streamKit.readBufferBits( buffer , 8 , 8 ) ).to.be( 231 ) ;
+		expect( streamKit.readBufferBits( buffer , 9 , 8 ) ).to.be( 115 ) ;
+		expect( streamKit.readBufferBits( buffer , 15 , 8 ) ).to.be( 237 ) ;
+
+		// Read 12 bits
+		expect( streamKit.readBufferBits( buffer , 8 , 12 ) ).to.be( 1767 ) ;
+		expect( streamKit.readBufferBits( buffer , 12 , 12 ) ).to.be( 1902 ) ;
+		
+		// Read 12 bits, across 3 bytes
+		expect( streamKit.readBufferBits( buffer , 14 , 12 ) ).to.be( 1499 ) ;
+
+		// Read 20 bits, across 4 bytes
+		expect( streamKit.readBufferBits( buffer , 6 , 20 ) ).to.be( 383900 ) ;
+		expect( streamKit.readBufferBits( buffer , 7 , 20 ) ).to.be( 716238 ) ;
+		expect( streamKit.readBufferBits( buffer , 8 , 20 ) ).to.be( 358119 ) ;
+		expect( streamKit.readBufferBits( buffer , 12 , 20 ) ).to.be( 87918 ) ;
+	} ) ;
+
+	it( "write bits in the first byte" , () => {
+		var buffer = Buffer.alloc( 16 ) ;
+		expect( buffer[ 0 ] ).to.be( 0 ) ;
+		
+		// Write 1 bit
+		streamKit.writeBufferBits( buffer , 0 , 1 , 1 ) ;
+		expect( buffer[ 0 ] ).to.be( 1 ) ;
+	} ) ;
+
 } ) ;
 
