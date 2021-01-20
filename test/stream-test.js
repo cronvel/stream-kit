@@ -159,6 +159,22 @@ describe( "readBufferBits() / writeBufferBits()" , () => {
 		expect( streamKit.readBufferBits( buffer , 12 , 20 ) ).to.be( 87918 ) ;
 	} ) ;
 
+	it( "read signed bits" , () => {
+		var buffer = Buffer.alloc( 16 ) ;
+		buffer[ 0 ] = 0b00101101 ;
+		buffer[ 1 ] = 0b11100111 ;
+		buffer[ 2 ] = 0b01110110 ;
+		buffer[ 3 ] = 0b00010101 ;
+
+		// Read 2 bits
+		expect( streamKit.readBufferBits( buffer , 7 , 2 , true ) ).to.be( -2 ) ;
+		expect( streamKit.readBufferBits( buffer , 15 , 2 , true ) ).to.be( 1 ) ;
+
+		// Read 20 bits, across 4 bytes
+		expect( streamKit.readBufferBits( buffer , 6 , 20 , true ) ).to.be( 383900 ) ;
+		expect( streamKit.readBufferBits( buffer , 7 , 20 , true ) ).to.be( -332338 ) ;
+	} ) ;
+
 	it( "write bits in the first byte" , () => {
 		var buffer = Buffer.alloc( 16 ) ;
 		expect( buffer[ 0 ] ).to.be( 0 ) ;
@@ -220,6 +236,30 @@ describe( "readBufferBits() / writeBufferBits()" , () => {
 		expect( buffer.readUInt32LE( 0 ) ).to.be( 0b10001111111111111111010000011100 ) ;
 		streamKit.writeBufferBits( buffer , 0 , 16 , 0b1000000000000001 ) ;
 		expect( buffer.readUInt32LE( 0 ) ).to.be( 0b10001111111111111000000000000001 ) ;
+	} ) ;
+
+	it( "write signed bits" , () => {
+		var buffer = Buffer.alloc( 16 ) ;
+		
+		streamKit.writeBufferBits( buffer , 4 , 4 , 7 ) ;
+		expect( buffer.readUInt32LE( 0 ) ).to.be( 0b00000000000000000000000000000000 ) ;
+	} ) ;
+
+	it( "1000 random read/write" , () => {
+		var i , bitOffset , bitLength , value ,
+			maxByteLength = 16 ,
+			maxBitLength = maxByteLength * 8 ,
+			buffer = Buffer.alloc( maxByteLength ) ;
+		
+		for ( i = 0 ; i < 1000 ; i ++ ) {
+			bitOffset = Math.floor( Math.random() * maxBitLength ) ;
+			bitLength = 1 + Math.floor( Math.random() * Math.min( 32 , maxBitLength - bitOffset ) ) ;
+			value = Math.floor( Math.random() * ( 2 ** bitLength ) ) ;
+			//console.log( ">>>" , bitOffset , bitLength , 2 ** bitLength , value ) ;
+
+			streamKit.writeBufferBits( buffer , bitOffset , bitLength , value ) ;
+			expect( streamKit.readBufferBits( buffer , bitOffset , bitLength ) ).to.be( value ) ;
+		}
 	} ) ;
 } ) ;
 
