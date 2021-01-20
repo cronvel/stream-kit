@@ -165,6 +165,7 @@ describe( "readBufferBits() / writeBufferBits()" , () => {
 		buffer[ 1 ] = 0b11100111 ;
 		buffer[ 2 ] = 0b01110110 ;
 		buffer[ 3 ] = 0b00010101 ;
+		buffer[ 4 ] = 0b01100000 ;
 
 		// Read 2 bits
 		expect( streamKit.readBufferBits( buffer , 7 , 2 , true ) ).to.be( -2 ) ;
@@ -173,6 +174,9 @@ describe( "readBufferBits() / writeBufferBits()" , () => {
 		// Read 20 bits, across 4 bytes
 		expect( streamKit.readBufferBits( buffer , 6 , 20 , true ) ).to.be( 383900 ) ;
 		expect( streamKit.readBufferBits( buffer , 7 , 20 , true ) ).to.be( -332338 ) ;
+
+		// Old bug:
+		expect( streamKit.readBufferBits( buffer , 33 , 6 , true ) ).to.be( -16 ) ;
 	} ) ;
 
 	it( "write bits in the first byte" , () => {
@@ -239,10 +243,23 @@ describe( "readBufferBits() / writeBufferBits()" , () => {
 	} ) ;
 
 	it( "write signed bits" , () => {
-		var buffer = Buffer.alloc( 16 ) ;
+		var buffer ;
 		
-		streamKit.writeBufferBits( buffer , 4 , 4 , 7 ) ;
-		expect( buffer.readUInt32LE( 0 ) ).to.be( 0b00000000000000000000000000000000 ) ;
+		buffer = Buffer.alloc( 16 ) ;
+		streamKit.writeBufferBits( buffer , 4 , 4 , 7 , true ) ;
+		expect( buffer.readUInt32LE( 0 ) ).to.be( 0b00000000000000000000000001110000 ) ;
+		
+		buffer = Buffer.alloc( 16 ) ;
+		streamKit.writeBufferBits( buffer , 4 , 4 , 1 , true ) ;
+		expect( buffer.readUInt32LE( 0 ) ).to.be( 0b00000000000000000000000000010000 ) ;
+
+		buffer = Buffer.alloc( 16 ) ;
+		streamKit.writeBufferBits( buffer , 4 , 4 , -1 , true ) ;
+		expect( buffer.readUInt32LE( 0 ) ).to.be( 0b00000000000000000000000011110000 ) ;
+
+		buffer = Buffer.alloc( 16 ) ;
+		streamKit.writeBufferBits( buffer , 4 , 4 , -8 , true ) ;
+		expect( buffer.readUInt32LE( 0 ) ).to.be( 0b00000000000000000000000010000000 ) ;
 	} ) ;
 
 	it( "1000 random read/write" , () => {
@@ -259,6 +276,23 @@ describe( "readBufferBits() / writeBufferBits()" , () => {
 
 			streamKit.writeBufferBits( buffer , bitOffset , bitLength , value ) ;
 			expect( streamKit.readBufferBits( buffer , bitOffset , bitLength ) ).to.be( value ) ;
+		}
+	} ) ;
+
+	it( "1000 random signed read/write" , () => {
+		var i , bitOffset , bitLength , value ,
+			maxByteLength = 16 ,
+			maxBitLength = maxByteLength * 8 ,
+			buffer = Buffer.alloc( maxByteLength ) ;
+		
+		for ( i = 0 ; i < 1000 ; i ++ ) {
+			bitOffset = Math.floor( Math.random() * maxBitLength ) ;
+			bitLength = 1 + Math.floor( Math.random() * Math.min( 32 , maxBitLength - bitOffset ) ) ;
+			value = Math.floor( Math.random() * ( 2 ** bitLength ) )  -  ( 2 ** ( bitLength - 1 ) ) ;
+			//console.log( ">>>" , bitOffset , bitLength , 2 ** bitLength , value ) ;
+
+			streamKit.writeBufferBits( buffer , bitOffset , bitLength , value , true ) ;
+			expect( streamKit.readBufferBits( buffer , bitOffset , bitLength , true ) ).to.be( value ) ;
 		}
 	} ) ;
 } ) ;
