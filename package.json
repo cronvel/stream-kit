@@ -1,6 +1,6 @@
 {
   "name": "stream-kit",
-  "version": "0.4.3",
+  "version": "0.4.4",
   "description": "Stream utilities.",
   "main": "lib/stream-kit.js",
   "engines": {
