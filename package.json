@@ -1,6 +1,6 @@
 {
   "name": "stream-kit",
-  "version": "0.4.4",
+  "version": "0.4.5",
   "description": "Stream utilities.",
   "main": "lib/stream-kit.js",
   "engines": {
@@ -10,9 +10,8 @@
     "test": "test"
   },
   "dependencies": {
-    "seventh": "^0.6.4"
+    "seventh": "^0.7.40"
   },
-  "devDependencies": {},
   "scripts": {
     "test": "tea-time -R dot"
   },
