@@ -35,6 +35,60 @@ const streamKit = require( '..' ) ;
 
 
 
+describe( "SequentialReadBuffer & SequentialWriteBuffer" , () => {
+	
+	it( "should build a buffer with sequential writes and then read it with sequential reads" , () => {
+		var writable = new streamKit.SequentialWriteBuffer() ;
+		writable.writeLps8Utf8( "some string" ) ;
+		writable.writeUInt8( 42 ) ;
+		writable.writeInt8( -7 ) ;
+		writable.writeInt16( 489 ) ;
+		writable.writeUInt32( 123456 ) ;
+		writable.writeLps16Utf8( "and another some string" ) ;
+		
+		var bufferSize = writable.size() ;
+		var buffer = writable.getBuffer() ;
+
+		var readable = new streamKit.SequentialReadBuffer( buffer ) ;
+		expect( readable.remainingBytes() ).to.be( bufferSize ) ;
+		expect( readable.readLps8Utf8() ).to.be( "some string" ) ;
+		expect( readable.readUInt8() ).to.be( 42 ) ;
+		expect( readable.readInt8() ).to.be( -7 ) ;
+		expect( readable.readInt16() ).to.be( 489 ) ;
+		expect( readable.readUInt32() ).to.be( 123456 ) ;
+		expect( readable.readLps16Utf8() ).to.be( "and another some string" ) ;
+		expect( readable.ended() ).to.be( true ) ;
+		expect( readable.remainingBytes() ).to.be( 0 ) ;
+	} ) ;
+	
+	it( "SequentialWriteBuffer should manage ever-growing chunks" , () => {
+		var stringPart = "a string!" ,
+			stringArray = [] ;
+
+		for ( let i = 0 ; i < 100 ; i ++ ) {
+			stringArray[ i ] = stringPart.repeat( 1 + Math.round( 100 * Math.random() ) ) ;
+		}
+
+		var writable = new streamKit.SequentialWriteBuffer( 8 ) ;
+		for ( let str of stringArray ) {
+			writable.writeLps16Utf8( str ) ;
+		}
+
+		var bufferSize = writable.size() ;
+		var buffer = writable.getBuffer() ;
+
+		var readable = new streamKit.SequentialReadBuffer( buffer ) ;
+		expect( readable.remainingBytes() ).to.be( bufferSize ) ;
+		for ( let str of stringArray ) {
+			expect( readable.readLps16Utf8() ).to.be( str ) ;
+		}
+		expect( readable.ended() ).to.be( true ) ;
+		expect( readable.remainingBytes() ).to.be( 0 ) ;
+	} ) ;
+} ) ;
+
+
+
 describe( "WritableToBuffer" , () => {
 	
 	it( "should bufferize any write" , () => {
