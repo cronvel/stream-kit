@@ -85,6 +85,58 @@ describe( "SequentialReadBuffer & SequentialWriteBuffer" , () => {
 		expect( readable.ended() ).to.be( true ) ;
 		expect( readable.remainingBytes() ).to.be( 0 ) ;
 	} ) ;
+	
+	it( "should perform sequential bit reads and writes" , () => {
+		var writable = new streamKit.SequentialWriteBuffer() ;
+
+		writable.writeUBits( 0b01 , 2 ) ;
+		writable.writeUBits( 0b101 , 3 ) ;
+		writable.writeUBits( 0b110 , 3 ) ;
+
+		// Overlapping
+		writable.writeUBits( 0b1101 , 4 ) ;
+		writable.writeUBits( 0b010111 , 6 ) ;
+		writable.writeUBits( 0b0100000 , 7 ) ;
+		writable.writeUBits( 0b1 , 1 ) ;
+
+		// Reset and realign bit writing by writing byte
+		writable.writeUInt8( 42 ) ;
+		writable.writeUBits( 0b1 , 1 ) ;
+		writable.writeUBits( 0b0 , 1 ) ;
+		writable.writeUBits( 0b10011 , 5 ) ;
+
+		// Again
+		writable.writeUtf8( "boblol" , 3 ) ;
+		writable.writeUBits( 0b01 , 2 ) ;
+		writable.writeUBits( 0b10 , 2 ) ;
+		
+		var bufferSize = writable.size() ;
+		var buffer = writable.getBuffer() ;
+		//console.log( "Buffer:" , buffer ) ;
+
+		var readable = new streamKit.SequentialReadBuffer( buffer ) ;
+
+		expect( readable.readUBits( 2 ) ).to.be( 0b01 ) ;
+		expect( readable.readUBits( 3 ) ).to.be( 0b101 ) ;
+		expect( readable.readUBits( 3 ) ).to.be( 0b110 ) ;
+
+		expect( readable.readUBits( 4 ) ).to.be( 0b1101 ) ;
+		expect( readable.readUBits( 6 ) ).to.be( 0b010111 ) ;
+		expect( readable.readUBits( 7 ) ).to.be( 0b0100000 ) ;
+		expect( readable.readUBits( 1 ) ).to.be( 0b1 ) ;
+
+		expect( readable.readUInt8() ).to.be( 42 ) ;
+		expect( readable.readUBits( 1 ) ).to.be( 0b1 ) ;
+		expect( readable.readUBits( 1 ) ).to.be( 0b0 ) ;
+		expect( readable.readUBits( 5 ) ).to.be( 0b10011 ) ;
+		
+		expect( readable.readUtf8( 3 ) ).to.be( "bob" ) ;
+		expect( readable.readUBits( 2 ) ).to.be( 0b01 ) ;
+		expect( readable.readUBits( 2 ) ).to.be( 0b10 ) ;
+
+		expect( readable.ended() ).to.be( true ) ;
+		expect( readable.remainingBytes() ).to.be( 0 ) ;
+	} ) ;
 } ) ;
 
 
