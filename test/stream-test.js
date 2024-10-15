@@ -137,6 +137,28 @@ describe( "SequentialReadBuffer & SequentialWriteBuffer" , () => {
 		expect( readable.ended() ).to.be( true ) ;
 		expect( readable.remainingBytes() ).to.be( 0 ) ;
 	} ) ;
+	
+	it( "should perform random sequential bit reads and writes" , () => {
+		var ops = [] ,
+			writable = new streamKit.SequentialWriteBuffer() ;
+
+		for ( let i = 0 ; i < 100 ; i ++ ) {
+			let bitCount = Math.ceil( 8 * Math.random() ) ;
+			let number = Math.floor( ( 1 << bitCount ) * Math.random() ) ;
+			ops.push( [ bitCount , number ] ) ;
+			writable.writeUBits( number , bitCount ) ;
+		}
+
+		var buffer = writable.getBuffer() ;
+		var readable = new streamKit.SequentialReadBuffer( buffer ) ;
+
+		for ( let [ bitCount , expectedNumber ] of ops ) {
+			expect( readable.readUBits( bitCount ) ).to.be( expectedNumber ) ;
+		}
+
+		expect( readable.ended() ).to.be( true ) ;
+		expect( readable.remainingBytes() ).to.be( 0 ) ;
+	} ) ;
 } ) ;
 
 
@@ -147,25 +169,41 @@ describe( "WritableToBuffer" , () => {
 		var writable = new streamKit.WritableToBuffer() ;
 		
 		writable.write( "bob" ) ;
-		expect( writable.get().toString() ).to.be( "bob" ) ;
-		expect( writable.buffer.length ).to.be( 1024 ) ;
+		expect( writable.getBuffer().toString() ).to.be( "bob" ) ;
 		
 		writable.write( "bob" ) ;
-		expect( writable.get().toString() ).to.be( "bobbob" ) ;
+		expect( writable.getBuffer().toString() ).to.be( "bobbob" ) ;
 		
 		writable.write( "jack" ) ;
-		expect( writable.get().toString() ).to.be( "bobbobjack" ) ;
+		expect( writable.getBuffer().toString() ).to.be( "bobbobjack" ) ;
 		
 		// Force a buffer reallocation
 		writable.write( Buffer.alloc( 1024 , 'a'.charCodeAt(0) ) ) ;
-		expect( writable.dataSize ).to.be( 1034 ) ;
-		expect( writable.get().toString() ).to.be( "bobbobjack" + 'a'.repeat( 1024 ) ) ;
-		expect( writable.buffer.length ).to.be( 2048 ) ;
+		expect( writable.size() ).to.be( 1034 ) ;
+		expect( writable.getBuffer().toString() ).to.be( "bobbobjack" + 'a'.repeat( 1024 ) ) ;
+	} ) ;
+
+	it( "should bufferize multiple random writes" , () => {
+		var wholeString = '' ,
+			writable = new streamKit.WritableToBuffer() ;
+		
+		for ( let i = 0 ; i < 100 ; i ++ ) {
+			let str = '' + Math.round( 1000000 * Math.random() ) ;
+			wholeString += str ;
+			writable.write( str ) ;
+		}
+
+		expect( writable.getBuffer().toString() ).to.be( wholeString ) ;
+		expect( writable.size() ).to.be( wholeString.length ) ;
 	} ) ;
 } ) ;
 
 
 
+
+
+// DEPRECATED, but still usefull since it performs reading/writing bits in little-endian,
+// while buffer method only support big-endian bit reading
 describe( "readBufferBits() / writeBufferBits()" , () => {
 	
 	it( "read bits in the first byte" , () => {
