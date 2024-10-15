@@ -137,27 +137,68 @@ describe( "SequentialReadBuffer & SequentialWriteBuffer" , () => {
 		expect( readable.ended() ).to.be( true ) ;
 		expect( readable.remainingBytes() ).to.be( 0 ) ;
 	} ) ;
+} ) ;
+
+
 	
-	it( "should perform random sequential bit reads and writes" , () => {
+describe( "Cross-class random tests" , () => {
+
+	it( "cross-testing random bit reads and writes, between Sequential*Buffer StreamBuffer instances" , async () => {
 		var ops = [] ,
-			writable = new streamKit.SequentialWriteBuffer() ;
+			writableSeqBuffer = new streamKit.SequentialWriteBuffer() ,
+			writableBuffer = new streamKit.WritableToBuffer() ,
+			writableStreamBuffer = new streamKit.StreamBuffer( writableBuffer ) ;
 
-		for ( let i = 0 ; i < 100 ; i ++ ) {
-			let bitCount = Math.ceil( 8 * Math.random() ) ;
-			let number = Math.floor( ( 1 << bitCount ) * Math.random() ) ;
-			ops.push( [ bitCount , number ] ) ;
-			writable.writeUBits( number , bitCount ) ;
+		for ( let i = 0 ; i < 1000 ; i ++ ) {
+			let isBit = Math.random() < 0.8 ;
+
+			if ( isBit ) {
+				let count = Math.ceil( 8 * Math.random() ) ;
+				let number = Math.floor( ( 1 << count ) * Math.random() ) ;
+				ops.push( [ isBit , count , number ] ) ;
+				writableSeqBuffer.writeUBits( number , count ) ;
+				await writableStreamBuffer.writeUBits( number , count ) ;
+			}
+			else {
+				let number = Math.floor( 10000 * Math.random() ) ;
+				ops.push( [ isBit , null , number ] ) ;
+				writableSeqBuffer.writeUInt16( number ) ;
+				await writableStreamBuffer.writeUInt16( number ) ;
+			}
 		}
 
-		var buffer = writable.getBuffer() ;
-		var readable = new streamKit.SequentialReadBuffer( buffer ) ;
+		// End the stream, it will flush any remaining left-overs, also wait for this to be finished
+		await writableStreamBuffer.end() ;
+		//console.log( writableBuffer.getBuffer() ) ;
 
-		for ( let [ bitCount , expectedNumber ] of ops ) {
-			expect( readable.readUBits( bitCount ) ).to.be( expectedNumber ) ;
+		var buffer = writableSeqBuffer.getBuffer() ,
+			readableSeqBuffer = new streamKit.SequentialReadBuffer( buffer ) ,
+			readableSeqBuffer2 = new streamKit.SequentialReadBuffer( writableBuffer.getBuffer() ) ,
+			readableBuffer = new streamKit.BufferToReadable( buffer ) ,
+			readableStreamBuffer = new streamKit.StreamBuffer( readableBuffer ) ;
+
+		let index = 0 ;
+		for ( let [ isBit , count , expectedNumber ] of ops ) {
+			if ( isBit ) {
+				expect( readableSeqBuffer.readUBits( count ) ).to.be( expectedNumber ) ;
+				expect( await readableStreamBuffer.readUBits( count ) ).to.be( expectedNumber ) ;
+				try {
+				expect( readableSeqBuffer2.readUBits( count ) ).to.be( expectedNumber ) ;
+				} catch ( error ) {
+					console.error( "Error at index" , index ) ;
+					throw error ;
+				}
+			}
+			else {
+				expect( readableSeqBuffer.readUInt16() ).to.be( expectedNumber ) ;
+				expect( await readableStreamBuffer.readUInt16() ).to.be( expectedNumber ) ;
+				expect( readableSeqBuffer2.readUInt16() ).to.be( expectedNumber ) ;
+			}
+			index ++ ;
 		}
 
-		expect( readable.ended() ).to.be( true ) ;
-		expect( readable.remainingBytes() ).to.be( 0 ) ;
+		expect( readableSeqBuffer.ended() ).to.be( true ) ;
+		expect( readableSeqBuffer.remainingBytes() ).to.be( 0 ) ;
 	} ) ;
 } ) ;
 
@@ -204,7 +245,7 @@ describe( "WritableToBuffer" , () => {
 
 // DEPRECATED, but still usefull since it performs reading/writing bits in little-endian,
 // while buffer method only support big-endian bit reading
-describe( "readBufferBits() / writeBufferBits()" , () => {
+describe( "(DEPRECATED) readBufferBits() / writeBufferBits()" , () => {
 	
 	it( "read bits in the first byte" , () => {
 		var buffer = Buffer.alloc( 16 ) ;
