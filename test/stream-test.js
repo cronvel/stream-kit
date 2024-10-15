@@ -50,15 +50,15 @@ describe( "SequentialReadBuffer & SequentialWriteBuffer" , () => {
 		var buffer = writable.getBuffer() ;
 
 		var readable = new streamKit.SequentialReadBuffer( buffer ) ;
-		expect( readable.remainingBytes() ).to.be( bufferSize ) ;
+		expect( readable.remainingBytes ).to.be( bufferSize ) ;
 		expect( readable.readLps8Utf8() ).to.be( "some string" ) ;
 		expect( readable.readUInt8() ).to.be( 42 ) ;
 		expect( readable.readInt8() ).to.be( -7 ) ;
 		expect( readable.readInt16() ).to.be( 489 ) ;
 		expect( readable.readUInt32() ).to.be( 123456 ) ;
 		expect( readable.readLps16Utf8() ).to.be( "and another some string" ) ;
-		expect( readable.ended() ).to.be( true ) ;
-		expect( readable.remainingBytes() ).to.be( 0 ) ;
+		expect( readable.ended ).to.be( true ) ;
+		expect( readable.remainingBytes ).to.be( 0 ) ;
 	} ) ;
 	
 	it( "SequentialWriteBuffer should manage ever-growing chunks" , () => {
@@ -78,12 +78,12 @@ describe( "SequentialReadBuffer & SequentialWriteBuffer" , () => {
 		var buffer = writable.getBuffer() ;
 
 		var readable = new streamKit.SequentialReadBuffer( buffer ) ;
-		expect( readable.remainingBytes() ).to.be( bufferSize ) ;
+		expect( readable.remainingBytes ).to.be( bufferSize ) ;
 		for ( let str of stringArray ) {
 			expect( readable.readLps16Utf8() ).to.be( str ) ;
 		}
-		expect( readable.ended() ).to.be( true ) ;
-		expect( readable.remainingBytes() ).to.be( 0 ) ;
+		expect( readable.ended ).to.be( true ) ;
+		expect( readable.remainingBytes ).to.be( 0 ) ;
 	} ) ;
 	
 	it( "should perform sequential bit reads and writes" , () => {
@@ -134,8 +134,8 @@ describe( "SequentialReadBuffer & SequentialWriteBuffer" , () => {
 		expect( readable.readUBits( 2 ) ).to.be( 0b01 ) ;
 		expect( readable.readUBits( 2 ) ).to.be( 0b10 ) ;
 
-		expect( readable.ended() ).to.be( true ) ;
-		expect( readable.remainingBytes() ).to.be( 0 ) ;
+		expect( readable.ended ).to.be( true ) ;
+		expect( readable.remainingBytes ).to.be( 0 ) ;
 	} ) ;
 } ) ;
 
@@ -197,8 +197,8 @@ describe( "Cross-class random tests" , () => {
 			index ++ ;
 		}
 
-		expect( readableSeqBuffer.ended() ).to.be( true ) ;
-		expect( readableSeqBuffer.remainingBytes() ).to.be( 0 ) ;
+		expect( readableSeqBuffer.ended ).to.be( true ) ;
+		expect( readableSeqBuffer.remainingBytes ).to.be( 0 ) ;
 	} ) ;
 } ) ;
 
