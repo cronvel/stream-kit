@@ -200,18 +200,25 @@ describe( "Cross-class random tests" , () => {
 			writableBuffer = new streamKit.WritableToBuffer() ,
 			writableStreamBuffer = new streamKit.StreamBuffer( writableBuffer ) ;
 
-		for ( let i = 0 ; i < 100 ; i ++ ) {
-			let string = ( '' + Math.floor( 1000000 * Math.random() ) ).repeat( 1 + Math.floor( 20 * Math.random() ) ) ;
+		for ( let i = 0 ; i < 50 ; i ++ ) {
+			//let string = '<' + ( '[' + Math.floor( 1000000 * Math.random() ) + ']' ).repeat( 1 + Math.floor( 20 * Math.random() ) ) + '>' ;
+			let string = '<' + ( '[' + i + ']' ).repeat( 1 + Math.floor( 20 * Math.random() ) ) + '>' ;
 			ops.push( string ) ;
 			writableSeqBuffer.writeNullTerminatedString( string ) ;
-			await writableStreamBuffer.writeNullTerminatedString( string ) ;
+			console.log( "(test) BF .writeNullTerminatedString()" , i ) ;
+			
+			// Test things when we do not await, the string should still be sent in the correct order
+			writableStreamBuffer.writeNullTerminatedString( string ) ;
+			//await writableStreamBuffer.writeNullTerminatedString( string ) ;
+			
+			console.log( "(test) AFT .writeNullTerminatedString()" , i ) ;
 		}
 
 		// End the stream, it will flush any remaining left-overs, also wait for this to be finished
-		console.log( "BF end()" ) ;
+		console.log( "(test) BF end()" ) ;
 		await writableStreamBuffer.end() ;
-		console.log( "AFT end()" ) ;
-		//console.log( writableBuffer.getBuffer() ) ;
+		console.log( "(test) AFT end()" ) ;
+		console.log( "writableBuffer:" , writableBuffer.getBuffer().toString() ) ;
 
 		var buffer = writableSeqBuffer.getBuffer() ,
 			readableSeqBuffer = new streamKit.SequentialReadBuffer( buffer ) ,
