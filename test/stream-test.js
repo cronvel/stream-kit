@@ -200,7 +200,7 @@ describe( "Cross-class random tests" , () => {
 			writableBuffer = new streamKit.WritableToBuffer() ,
 			writableStreamBuffer = new streamKit.StreamBuffer( writableBuffer ) ;
 
-		for ( let i = 0 ; i < 50 ; i ++ ) {
+		for ( let i = 0 ; i < 1000 ; i ++ ) {
 			//let string = '<' + ( '[' + Math.floor( 1000000 * Math.random() ) + ']' ).repeat( 1 + Math.floor( 20 * Math.random() ) ) + '>' ;
 			let string = '<' + ( '[' + i + ']' ).repeat( 1 + Math.floor( 20 * Math.random() ) ) + '>' ;
 			ops.push( string ) ;
