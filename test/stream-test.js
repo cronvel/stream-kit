@@ -157,13 +157,13 @@ describe( "Cross-class random tests" , () => {
 				let number = Math.floor( ( 1 << count ) * Math.random() ) ;
 				ops.push( [ isBit , count , number ] ) ;
 				writableSeqBuffer.writeUBits( number , count ) ;
-				await writableStreamBuffer.writeUBits( number , count ) ;
+				writableStreamBuffer.writeUBits( number , count ) ;
 			}
 			else {
 				let number = Math.floor( 10000 * Math.random() ) ;
 				ops.push( [ isBit , null , number ] ) ;
 				writableSeqBuffer.writeUInt16( number ) ;
-				await writableStreamBuffer.writeUInt16( number ) ;
+				writableStreamBuffer.writeUInt16( number ) ;
 			}
 		}
 
@@ -205,20 +205,12 @@ describe( "Cross-class random tests" , () => {
 			let string = '<' + ( '[' + i + ']' ).repeat( 1 + Math.floor( 20 * Math.random() ) ) + '>' ;
 			ops.push( string ) ;
 			writableSeqBuffer.writeNullTerminatedString( string ) ;
-			console.log( "(test) BF .writeNullTerminatedString()" , i ) ;
-			
-			// Test things when we do not await, the string should still be sent in the correct order
 			writableStreamBuffer.writeNullTerminatedString( string ) ;
-			//await writableStreamBuffer.writeNullTerminatedString( string ) ;
-			
-			console.log( "(test) AFT .writeNullTerminatedString()" , i ) ;
 		}
 
 		// End the stream, it will flush any remaining left-overs, also wait for this to be finished
-		console.log( "(test) BF end()" ) ;
 		await writableStreamBuffer.end() ;
-		console.log( "(test) AFT end()" ) ;
-		console.log( "writableBuffer:" , writableBuffer.getBuffer().toString() ) ;
+		//console.log( "writableBuffer:" , writableBuffer.getBuffer().toString() ) ;
 
 		var buffer = writableSeqBuffer.getBuffer() ,
 			readableSeqBuffer = new streamKit.SequentialReadBuffer( buffer ) ,
@@ -226,7 +218,6 @@ describe( "Cross-class random tests" , () => {
 			readableBuffer = new streamKit.BufferToReadable( buffer ) ,
 			readableStreamBuffer = new streamKit.StreamBuffer( readableBuffer ) ;
 
-		console.log( "BF reads()" ) ;
 		for ( let expectedString of ops ) {
 			expect( readableSeqBuffer.readNullTerminatedString() ).to.be( expectedString ) ;
 			expect( await readableStreamBuffer.readNullTerminatedString() ).to.be( expectedString ) ;
