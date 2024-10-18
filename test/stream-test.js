@@ -177,24 +177,53 @@ describe( "Cross-class random tests" , () => {
 			readableBuffer = new streamKit.BufferToReadable( buffer ) ,
 			readableStreamBuffer = new streamKit.StreamBuffer( readableBuffer ) ;
 
-		let index = 0 ;
 		for ( let [ isBit , count , expectedNumber ] of ops ) {
 			if ( isBit ) {
 				expect( readableSeqBuffer.readUBits( count ) ).to.be( expectedNumber ) ;
 				expect( await readableStreamBuffer.readUBits( count ) ).to.be( expectedNumber ) ;
-				try {
 				expect( readableSeqBuffer2.readUBits( count ) ).to.be( expectedNumber ) ;
-				} catch ( error ) {
-					console.error( "Error at index" , index ) ;
-					throw error ;
-				}
 			}
 			else {
 				expect( readableSeqBuffer.readUInt16() ).to.be( expectedNumber ) ;
 				expect( await readableStreamBuffer.readUInt16() ).to.be( expectedNumber ) ;
 				expect( readableSeqBuffer2.readUInt16() ).to.be( expectedNumber ) ;
 			}
-			index ++ ;
+		}
+
+		expect( readableSeqBuffer.ended ).to.be( true ) ;
+		expect( readableSeqBuffer.remainingBytes ).to.be( 0 ) ;
+	} ) ;
+
+	it( "cross-testing null-terminated strings, between Sequential*Buffer StreamBuffer instances" , async () => {
+		var ops = [] ,
+			writableSeqBuffer = new streamKit.SequentialWriteBuffer() ,
+			writableBuffer = new streamKit.WritableToBuffer() ,
+			writableStreamBuffer = new streamKit.StreamBuffer( writableBuffer ) ;
+
+		for ( let i = 0 ; i < 100 ; i ++ ) {
+			let string = ( '' + Math.floor( 1000000 * Math.random() ) ).repeat( 1 + Math.floor( 20 * Math.random() ) ) ;
+			ops.push( string ) ;
+			writableSeqBuffer.writeNullTerminatedString( string ) ;
+			await writableStreamBuffer.writeNullTerminatedString( string ) ;
+		}
+
+		// End the stream, it will flush any remaining left-overs, also wait for this to be finished
+		console.log( "BF end()" ) ;
+		await writableStreamBuffer.end() ;
+		console.log( "AFT end()" ) ;
+		//console.log( writableBuffer.getBuffer() ) ;
+
+		var buffer = writableSeqBuffer.getBuffer() ,
+			readableSeqBuffer = new streamKit.SequentialReadBuffer( buffer ) ,
+			readableSeqBuffer2 = new streamKit.SequentialReadBuffer( writableBuffer.getBuffer() ) ,
+			readableBuffer = new streamKit.BufferToReadable( buffer ) ,
+			readableStreamBuffer = new streamKit.StreamBuffer( readableBuffer ) ;
+
+		console.log( "BF reads()" ) ;
+		for ( let expectedString of ops ) {
+			expect( readableSeqBuffer.readNullTerminatedString() ).to.be( expectedString ) ;
+			expect( await readableStreamBuffer.readNullTerminatedString() ).to.be( expectedString ) ;
+			expect( readableSeqBuffer2.readNullTerminatedString() ).to.be( expectedString ) ;
 		}
 
 		expect( readableSeqBuffer.ended ).to.be( true ) ;
