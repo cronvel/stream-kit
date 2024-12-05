@@ -270,6 +270,28 @@ describe( "WritableToBuffer" , () => {
 
 
 
+describe( "ReadableGenerator" , () => {
+	
+	it( "..." , async () => {
+		var generator = function * ( streamBuffer ) {
+			//console.log( "Generator received streamBuffer:" , streamBuffer ) ;
+			yield "head\n" ;
+			for ( let i = 0 ; i < 5 ; i ++ ) { yield "chunk #" + i + "\n" ; }
+			yield "tail\n" ;
+		} ;
+		var readable = new streamKit.ReadableGenerator( generator ) ;
+
+		var returned = readable.read() ;
+		console.log( "Returned:" , returned ) ;
+		return ;
+		expect( readable.read().toString() ).to.be( "head\n" ) ;
+	} ) ;
+} ) ;
+
+
+
+
+
 // DEPRECATED, but still usefull since it performs reading/writing bits in little-endian,
 // while buffer method only support big-endian bit reading
 describe( "(DEPRECATED) readBufferBits() / writeBufferBits()" , () => {
