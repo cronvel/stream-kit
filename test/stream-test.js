@@ -31,6 +31,7 @@
 
 
 const streamKit = require( '..' ) ;
+const Promise = require( 'seventh' ) ;
 //const fs = require( 'fs' ) ;
 
 
@@ -280,7 +281,21 @@ describe( "ReadableGenerator" , () => {
 			yield "tail\n" ;
 		} ;
 		var readable = new streamKit.ReadableGenerator( generator ) ;
+		readable.write( "bob\n" ) ;
 
+		var dataArray = [] ;
+		
+		for ( ;; ) {
+			await Promise.onceEvent( readable , 'readable' ) ;
+			let data = readable.read() ;
+			console.log( "** Received data:" , data.toString() ) ;
+			dataArray.push( data ) ;
+		}
+		
+		return ;
+
+		var returned = readable.read() ;
+		console.log( "Returned:" , returned ) ;
 		var returned = readable.read() ;
 		console.log( "Returned:" , returned ) ;
 		return ;
