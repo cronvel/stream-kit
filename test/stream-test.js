@@ -278,11 +278,21 @@ describe( "ReadableGenerator" , () => {
 	it( "zzz" , async () => {
 		var generator = function * ( streamBuffer ) {
 			//console.log( "Generator received streamBuffer:" , streamBuffer ) ;
+			//console.log( "Generated: head\n" ) ;
 			yield "head\n" ;
-			for ( let i = 0 ; i < 5 ; i ++ ) { yield "chunk #" + i + "\n" ; }
+			for ( let i = 0 ; i < 5 ; i ++ ) {
+				let value = "chunk #" + i + "\n" ;
+				//console.log( "Generated:" , value ) ;
+				yield value ;
+			}
+
+			//console.log( "Generated: tail\n" ) ;
 			yield "tail\n" ;
 		} ;
-		var readable = new streamKit.ReadableGenerator( generator ) ;
+		var readable = new streamKit.ReadableGenerator( generator , { prefetch: 5 } ) ;
+		readable.on( 'close' , () => console.log( "'close' event" ) ) ;
+		readable.on( 'end' , () => console.log( "'end' event" ) ) ;
+
 		readable.write( "bob\n" ) ;
 
 		var dataArray = [] ;
@@ -291,20 +301,13 @@ describe( "ReadableGenerator" , () => {
 			console.log( "** Received data:" , data.toString() ) ;
 			dataArray.push( data ) ;
 		}
-		
-		return ;
-
-		var returned = readable.read() ;
-		console.log( "Returned:" , returned ) ;
-		var returned = readable.read() ;
-		console.log( "Returned:" , returned ) ;
-		return ;
-		expect( readable.read().toString() ).to.be( "head\n" ) ;
 	} ) ;
 
-	it( "xxx" , async () => {
-		var generator = function * () {
-			for ( let i = 0 ; true ; i ++ ) {
+	it( "xxx" , async function() {
+		this.timeout( 5000 ) ;
+		var generator = async function * () {
+			for ( let i = 0 ; i < 25 ; i ++ ) {
+				//await Promise.resolveTimeout( 10 ) ;
 				let value = "value#" + i + "\n" ;
 				console.log( "Generated:" , value ) ;
 				yield value ;
@@ -312,10 +315,12 @@ describe( "ReadableGenerator" , () => {
 		}
 		
 		var readable = stream.Readable.from( generator() ) ;
+		readable.on( 'close' , () => console.log( "'close' event" ) ) ;
+		readable.on( 'end' , () => console.log( "'end' event" ) ) ;
 
 		for await ( let data of readable ) {
 			console.log( "Received:" , data ) ;
-			await Promise.resolveTimeout( 100 ) ;
+			await Promise.resolveTimeout( 20 ) ;
 		}
 	} ) ;
 } ) ;
