@@ -32,6 +32,8 @@
 
 const streamKit = require( '..' ) ;
 const Promise = require( 'seventh' ) ;
+
+const stream = require( 'stream' ) ;
 //const fs = require( 'fs' ) ;
 
 
@@ -273,7 +275,7 @@ describe( "WritableToBuffer" , () => {
 
 describe( "ReadableGenerator" , () => {
 	
-	it( "..." , async () => {
+	it( "zzz" , async () => {
 		var generator = function * ( streamBuffer ) {
 			//console.log( "Generator received streamBuffer:" , streamBuffer ) ;
 			yield "head\n" ;
@@ -285,9 +287,7 @@ describe( "ReadableGenerator" , () => {
 
 		var dataArray = [] ;
 		
-		for ( ;; ) {
-			await Promise.onceEvent( readable , 'readable' ) ;
-			let data = readable.read() ;
+		for await ( let data of readable ) {
 			console.log( "** Received data:" , data.toString() ) ;
 			dataArray.push( data ) ;
 		}
@@ -300,6 +300,23 @@ describe( "ReadableGenerator" , () => {
 		console.log( "Returned:" , returned ) ;
 		return ;
 		expect( readable.read().toString() ).to.be( "head\n" ) ;
+	} ) ;
+
+	it( "xxx" , async () => {
+		var generator = function * () {
+			for ( let i = 0 ; true ; i ++ ) {
+				let value = "value#" + i + "\n" ;
+				console.log( "Generated:" , value ) ;
+				yield value ;
+			}
+		}
+		
+		var readable = stream.Readable.from( generator() ) ;
+
+		for await ( let data of readable ) {
+			console.log( "Received:" , data ) ;
+			await Promise.resolveTimeout( 100 ) ;
+		}
 	} ) ;
 } ) ;
 
