@@ -271,11 +271,9 @@ describe( "WritableToBuffer" , () => {
 
 
 
-
-
 describe( "ReadableGenerator" , () => {
 	
-	it( "zzz ReadableGenerator with/without prefetch" , async () => {
+	it( "ReadableGenerator with/without prefetch" , async () => {
 		var readable , dataString = '' , dataArray = [] ;
 
 		var generator = function * ( streamBuffer ) {
@@ -294,7 +292,7 @@ describe( "ReadableGenerator" , () => {
 		dataArray.length = 0 ;
 
 		for await ( let data of readable ) {
-			console.log( "** Received data:" , JSON.stringify( data.toString() ) ) ;
+			//console.log( "** Received data:" , JSON.stringify( data.toString() ) ) ;
 			dataArray.push( data ) ;
 			dataString += data.toString() ;
 		}
@@ -312,7 +310,7 @@ describe( "ReadableGenerator" , () => {
 		dataArray.length = 0 ;
 
 		for await ( let data of readable ) {
-			console.log( "** Received data:" , JSON.stringify( data.toString() ) ) ;
+			//console.log( "** Received data:" , JSON.stringify( data.toString() ) ) ;
 			dataArray.push( data ) ;
 			dataString += data.toString() ;
 		}
@@ -328,7 +326,7 @@ describe( "ReadableGenerator" , () => {
 		dataArray.length = 0 ;
 
 		for await ( let data of readable ) {
-			console.log( "** Received data:" , JSON.stringify( data.toString() ) ) ;
+			//console.log( "** Received data:" , JSON.stringify( data.toString() ) ) ;
 			dataArray.push( data ) ;
 			dataString += data.toString() ;
 		}
@@ -347,7 +345,7 @@ describe( "ReadableGenerator" , () => {
 
 		for await ( let data of readable ) {
 			await Promise.resolveTimeout( 10 ) ;
-			console.log( "** Received data:" , JSON.stringify( data.toString() ) ) ;
+			//console.log( "** Received data:" , JSON.stringify( data.toString() ) ) ;
 			dataArray.push( data ) ;
 			dataString += data.toString() ;
 		}
@@ -355,7 +353,7 @@ describe( "ReadableGenerator" , () => {
 		expect( dataString ).to.be( "head\nchunk #0\nchunk #1\nchunk #2\nchunk #3\nchunk #4\ntail\n" ) ;
 	} ) ;
 
-	it( "www ReadableGenerator with/without prefetch, using an async generator" , async function() {
+	it( "ReadableGenerator with/without prefetch, using an async generator" , async function() {
 		//this.timeout( 5000 ) ;
 
 		var readable , dataString = '' , dataArray = [] ;
@@ -375,20 +373,18 @@ describe( "ReadableGenerator" , () => {
 			yield "tail\n" ;
 		} ;
 
-		/*
 		readable = new streamKit.ReadableGenerator( generator ) ;
 
 		dataString = '' ;
 		dataArray.length = 0 ;
 
 		for await ( let data of readable ) {
-			console.log( "** Received data:" , JSON.stringify( data.toString() ) ) ;
+			//console.log( "** Received data:" , JSON.stringify( data.toString() ) ) ;
 			dataArray.push( data ) ;
 			dataString += data.toString() ;
 		}
 		
 		expect( dataString ).to.be( "head\nchunk #0\nchunk #1\nchunk #2\nchunk #3\nchunk #4\ntail\n" ) ;
-		*/
 
 
 		// With large prefetch
@@ -401,19 +397,12 @@ describe( "ReadableGenerator" , () => {
 		dataArray.length = 0 ;
 
 		for await ( let data of readable ) {
-			console.log( "** Received data:" , JSON.stringify( data.toString() ) ) ;
+			//console.log( "** Received data:" , JSON.stringify( data.toString() ) ) ;
 			dataArray.push( data ) ;
 			dataString += data.toString() ;
 		}
 		
 		expect( dataString ).to.be( "head\nchunk #0\nchunk #1\nchunk #2\nchunk #3\nchunk #4\ntail\n" ) ;
-
-
-
-
-return ;
-
-
 
 
 		// With small prefetch
@@ -424,7 +413,7 @@ return ;
 		dataArray.length = 0 ;
 
 		for await ( let data of readable ) {
-			console.log( "** Received data:" , JSON.stringify( data.toString() ) ) ;
+			//console.log( "** Received data:" , JSON.stringify( data.toString() ) ) ;
 			dataArray.push( data ) ;
 			dataString += data.toString() ;
 		}
@@ -443,7 +432,7 @@ return ;
 
 		for await ( let data of readable ) {
 			await Promise.resolveTimeout( 10 ) ;
-			console.log( "** Received data:" , JSON.stringify( data.toString() ) ) ;
+			//console.log( "** Received data:" , JSON.stringify( data.toString() ) ) ;
 			dataArray.push( data ) ;
 			dataString += data.toString() ;
 		}
@@ -451,7 +440,178 @@ return ;
 		expect( dataString ).to.be( "head\nchunk #0\nchunk #1\nchunk #2\nchunk #3\nchunk #4\ntail\n" ) ;
 	} ) ;
 
-	it( "xxx" , async function() {
+	it( "ReadableGenerator using StreamBuffer" , async () => {
+		var readable , dataString = '' , dataArray = [] ;
+
+		var generator = function * ( streamBuffer ) {
+			streamBuffer.writeUtf8( "head\n" ) ;
+			yield ;
+
+			for ( let i = 0 ; i < 5 ; i ++ ) {
+				let value = "chunk #" + i + "\n" ;
+				streamBuffer.writeUtf8( value ) ;
+				yield ;
+			}
+
+			streamBuffer.writeUtf8( "tail\n" ) ;
+			yield ;
+		} ;
+
+		readable = new streamKit.ReadableGenerator( generator ) ;
+
+		dataString = '' ;
+		dataArray.length = 0 ;
+
+		for await ( let data of readable ) {
+			//console.log( "** Received data:" , JSON.stringify( data.toString() ) ) ;
+			dataArray.push( data ) ;
+			dataString += data.toString() ;
+		}
+		
+		expect( dataString ).to.be( "head\nchunk #0\nchunk #1\nchunk #2\nchunk #3\nchunk #4\ntail\n" ) ;
+
+
+		// With large prefetch
+
+		readable = new streamKit.ReadableGenerator( generator , { prefetchSize: 2000 } ) ;
+
+		//await Promise.resolveTimeout( 100 ) ;
+		
+		dataString = '' ;
+		dataArray.length = 0 ;
+
+		for await ( let data of readable ) {
+			//console.log( "** Received data:" , JSON.stringify( data.toString() ) ) ;
+			dataArray.push( data ) ;
+			dataString += data.toString() ;
+		}
+		
+		expect( dataString ).to.be( "head\nchunk #0\nchunk #1\nchunk #2\nchunk #3\nchunk #4\ntail\n" ) ;
+
+
+		// With small prefetch
+
+		readable = new streamKit.ReadableGenerator( generator , { prefetchSize: 20 } ) ;
+
+		dataString = '' ;
+		dataArray.length = 0 ;
+
+		for await ( let data of readable ) {
+			//console.log( "** Received data:" , JSON.stringify( data.toString() ) ) ;
+			dataArray.push( data ) ;
+			dataString += data.toString() ;
+		}
+		
+		expect( dataString ).to.be( "head\nchunk #0\nchunk #1\nchunk #2\nchunk #3\nchunk #4\ntail\n" ) ;
+
+
+		// With small prefetch and timeout
+
+		readable = new streamKit.ReadableGenerator( generator , { prefetchSize: 20 } ) ;
+
+		await Promise.resolveTimeout( 10 ) ;
+		
+		dataString = '' ;
+		dataArray.length = 0 ;
+
+		for await ( let data of readable ) {
+			await Promise.resolveTimeout( 10 ) ;
+			//console.log( "** Received data:" , JSON.stringify( data.toString() ) ) ;
+			dataArray.push( data ) ;
+			dataString += data.toString() ;
+		}
+		
+		expect( dataString ).to.be( "head\nchunk #0\nchunk #1\nchunk #2\nchunk #3\nchunk #4\ntail\n" ) ;
+	} ) ;
+
+	it( "ReadableGenerator using StreamBuffer and an async generator" , async () => {
+		var readable , dataString = '' , dataArray = [] ;
+
+		var generator = async function * ( streamBuffer ) {
+			await Promise.resolveTimeout( 100 ) ;
+			streamBuffer.writeUtf8( "head\n" ) ;
+			yield ;
+
+			for ( let i = 0 ; i < 5 ; i ++ ) {
+				await Promise.resolveTimeout( 20 ) ;
+				let value = "chunk #" + i + "\n" ;
+				streamBuffer.writeUtf8( value ) ;
+				yield ;
+			}
+
+			await Promise.resolveTimeout( 100 ) ;
+			streamBuffer.writeUtf8( "tail\n" ) ;
+			yield ;
+		} ;
+
+		readable = new streamKit.ReadableGenerator( generator ) ;
+
+		dataString = '' ;
+		dataArray.length = 0 ;
+
+		for await ( let data of readable ) {
+			//console.log( "** Received data:" , JSON.stringify( data.toString() ) ) ;
+			dataArray.push( data ) ;
+			dataString += data.toString() ;
+		}
+		
+		expect( dataString ).to.be( "head\nchunk #0\nchunk #1\nchunk #2\nchunk #3\nchunk #4\ntail\n" ) ;
+
+
+		// With large prefetch
+
+		readable = new streamKit.ReadableGenerator( generator , { prefetchSize: 2000 } ) ;
+
+		//await Promise.resolveTimeout( 100 ) ;
+		
+		dataString = '' ;
+		dataArray.length = 0 ;
+
+		for await ( let data of readable ) {
+			//console.log( "** Received data:" , JSON.stringify( data.toString() ) ) ;
+			dataArray.push( data ) ;
+			dataString += data.toString() ;
+		}
+		
+		expect( dataString ).to.be( "head\nchunk #0\nchunk #1\nchunk #2\nchunk #3\nchunk #4\ntail\n" ) ;
+
+
+		// With small prefetch
+
+		readable = new streamKit.ReadableGenerator( generator , { prefetchSize: 20 } ) ;
+
+		dataString = '' ;
+		dataArray.length = 0 ;
+
+		for await ( let data of readable ) {
+			//console.log( "** Received data:" , JSON.stringify( data.toString() ) ) ;
+			dataArray.push( data ) ;
+			dataString += data.toString() ;
+		}
+		
+		expect( dataString ).to.be( "head\nchunk #0\nchunk #1\nchunk #2\nchunk #3\nchunk #4\ntail\n" ) ;
+
+
+		// With small prefetch and timeout
+
+		readable = new streamKit.ReadableGenerator( generator , { prefetchSize: 20 } ) ;
+
+		await Promise.resolveTimeout( 10 ) ;
+		
+		dataString = '' ;
+		dataArray.length = 0 ;
+
+		for await ( let data of readable ) {
+			await Promise.resolveTimeout( 10 ) ;
+			//console.log( "** Received data:" , JSON.stringify( data.toString() ) ) ;
+			dataArray.push( data ) ;
+			dataString += data.toString() ;
+		}
+		
+		expect( dataString ).to.be( "head\nchunk #0\nchunk #1\nchunk #2\nchunk #3\nchunk #4\ntail\n" ) ;
+	} ) ;
+
+	it.skip( "simple vanilla generator to readable" , async function() {
 		this.timeout( 5000 ) ;
 		var generator = async function * () {
 			for ( let i = 0 ; i < 25 ; i ++ ) {
