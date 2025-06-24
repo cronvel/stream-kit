@@ -114,8 +114,8 @@ describe( "SequentialReadBuffer & SequentialWriteBuffer" , () => {
 		writable.writeUBits( 0b10 , 2 ) ;
 
 		// Try sending booleans
-		writable.writeUBits( false ) ;
-		writable.writeUBits( true ) ;
+		writable.writeBoolean( false ) ;
+		writable.writeBoolean( true ) ;
 		
 		var bufferSize = writable.size() ;
 		var buffer = writable.getBuffer() ;
@@ -141,8 +141,8 @@ describe( "SequentialReadBuffer & SequentialWriteBuffer" , () => {
 		expect( readable.readUBits( 2 ) ).to.be( 0b01 ) ;
 		expect( readable.readUBits( 2 ) ).to.be( 0b10 ) ;
 
-		expect( readable.readUBits( 1 ) ).to.be( 0b0 ) ;
-		expect( readable.readUBits( 1 ) ).to.be( 0b1 ) ;
+		expect( readable.readBoolean() ).to.be( false ) ;
+		expect( readable.readBoolean() ).to.be( true ) ;
 
 		expect( readable.ended ).to.be( true ) ;
 		expect( readable.remainingBytes ).to.be( 0 ) ;
